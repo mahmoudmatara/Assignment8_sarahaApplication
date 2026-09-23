@@ -7,8 +7,11 @@ export const ApplicationException = (
 };
 
 // 400 Bad Request
-export const BadRequestException = (message = "Bad Request") => {
-  return ApplicationException(message, { cause: { status: 400 } });
+export const BadRequestException = (
+  message = "Bad Request",
+  details = null
+) => {
+  return ApplicationException(message, { cause: { status: 400, details } });
 };
 
 // 401 Unauthorized
