@@ -9,6 +9,7 @@ export const PORT = parseInt(process.env.PORT);
 export const DB_URI = process.env.MONGODB_URI;
 export const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS);
 export const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+export const REDIS_URI = process.env.REDIS_URI;
 
 export const ACCESS_USER_TOKEN_SIGNATURE = process.env.ACCESS_USER_TOKEN_SIGNATURE;
 export const ACCESS_ADMIN_TOKEN_SIGNATURE = process.env.ACCESS_ADMIN_TOKEN_SIGNATURE;

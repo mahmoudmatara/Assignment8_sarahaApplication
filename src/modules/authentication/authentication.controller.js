@@ -1,10 +1,9 @@
 import { loginService, signUpService } from "./authentication.service.js";
 import { successResponse } from "./../../common/utils/success.response.js";
-import { BadRequestException } from "../../common/exceptions/error.exceptions.js";
 
 export const signUpController = async (req, res, next) => {
   try {
-    const data = await signUpService(req.body);
+    const data = await signUpService(req.validate.body);
     return successResponse({
       res,
       message: "Account created successfully",
@@ -18,7 +17,11 @@ export const signUpController = async (req, res, next) => {
 
 export const loginController = async (req, res, next) => {
   try {
-    const data = await loginService(req.body, `${req.protocol}//${req.host}`);
+    const data = await loginService(
+      req.validate.body,
+      `${req.protocol}//${req.host}`
+    );
+    console.log({ v: req.validate });
     return successResponse({
       res,
       message: "User logged in successfully",

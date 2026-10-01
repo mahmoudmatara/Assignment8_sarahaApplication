@@ -16,6 +16,16 @@ import {
   REFRESH_TOKEN_EXPIRES_IN,
   REFRESH_USER_TOKEN_SIGNATURE,
 } from "../../config.js";
+import { randomUUID } from "node:crypto";
+import { existCache, setCache } from "../services/cache.service.js";
+import { UnauthorizedException } from "./../exceptions/error.exceptions.js";
+
+export const userBaseRevokeTokenKey = ({ userId }) => {
+  return `User::${userId.toString()}::Revoke_token`;
+};
+export const revokeTokenKey = ({ userId, jti }) => {
+  return `${userBaseRevokeTokenKey({ userId })}::${jti}`;
+};
 
 export const createToken = ({
   payload = {},
@@ -68,13 +78,21 @@ export const decodeToken = async ({
 } = {}) => {
   const decoded = jwt.decode(authorization);
   if (!decoded?.aud?.length) throw BadRequestException("missing token payload");
-  console.log({ decoded });
+  // console.log({ decoded });
   const payload = await verifyToken({
     token: authorization,
     secret: await getSignature({ tokenType, role: decoded.aud[0] }),
   });
 
   if (!payload?.sub) throw BadRequestException("missing token payload");
+
+  if (
+    await existCache({
+      key: revokeTokenKey({ userId: payload.sub, jti: payload.jti }),
+    })
+  ) {
+    throw UnauthorizedException("expired login credentials");
+  }
 
   const profileData = await findById({
     model: UserModel,
@@ -84,8 +102,21 @@ export const decodeToken = async ({
 
   if (!profileData) throw NotFoundException();
 
-  profileData.phone = await decryption(profileData.phone);
-  return { profileData, payload };
+  const userObject = profileData.toObject();
+
+  if (userObject.phone) {
+    userObject.phone = await decryption(userObject.phone);
+  }
+
+  //profileData.changeCredentialsTime  <== ده الوقت الي اليوزر عمل فيه لوج اوت
+  if (
+    (profileData.changeCredentialsTime?.getTime() ?? 0) >
+    payload.iat * 1000
+  ) {
+    throw UnauthorizedException("expired login credentials");
+  }
+
+  return { profileData, userObject, payload };
 };
 
 export const createLoginCredentials = async ({
@@ -96,6 +127,7 @@ export const createLoginCredentials = async ({
   const { accessSignatures, refreshSignatures } = await getTokenSignatures({
     roleType: account.role,
   });
+  const jwtid = randomUUID();
   const userId = account._id || account.sub || account.id || account;
   const access_token = createToken({
     payload: { sub: userId },
@@ -104,6 +136,7 @@ export const createLoginCredentials = async ({
       ...options,
       audience: [account.role],
       expiresIn: ACCESS_TOKEN_EXPIRES_IN,
+      jwtid,
     },
     secret: accessSignatures,
   });
@@ -115,9 +148,22 @@ export const createLoginCredentials = async ({
       ...options,
       audience: [account.role],
       expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+      jwtid,
     },
     secret: refreshSignatures,
   });
   console.log({ accessSignatures, refreshSignatures });
   return { access_token, refresh_token };
+};
+
+export const createRevokeToken = async ({ payload }) => {
+  const consumedTime = Math.ceil(Date.now() / 1000) - payload.iat;
+  const refreshExpiresIn = payload.iat + REFRESH_TOKEN_EXPIRES_IN;
+  const ttl = refreshExpiresIn - consumedTime;
+  await setCache({
+    key: revokeTokenKey({ userId: payload.sub, jti: payload.jti }),
+    value: payload.jti,
+    ttl,
+  });
+  return;
 };

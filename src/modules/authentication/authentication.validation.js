@@ -1,30 +1,40 @@
 import { z } from "zod";
+import {
+  matchField,
+  validationGeneralFields,
+} from "./../../common/validation.js";
 
-export const loginValidation = z.strictObject({
-  email: z.email(),
-  password: z.string().min(8).max(16),
+export const loginSchema = z.strictObject({
+  email: validationGeneralFields.email,
+  password: validationGeneralFields.password,
 });
 
-export const signupValidation = loginValidation
-  .safeExtend({
-    userName: z.string().min(3).max(25),
-    phone: z.string(),
-    confirmPassword: z.string().min(8).max(16),
-    age: z.number().min(18).max(60),
-  })
-  .superRefine((data, context) => {
-    if (data.password !== data.confirmPassword) {
-      context.addIssue({
-        code: "custom",
-        path: ["confirmPassword"],
-        message: "Passwords do not match",
+export const loginValidation = z.object({
+  body: loginSchema,
+  query: z.strictObject({
+    lang: z.enum(["ar", "en"]).optional(),
+  }),
+});
+
+export const signupValidation = z.object({
+  body: loginSchema
+    .safeExtend({
+      userName: validationGeneralFields.userName,
+      phone: validationGeneralFields.phone,
+      confirmPassword: validationGeneralFields.password,
+      age: validationGeneralFields.age,
+      // gender: z.union([
+      //   z.literal(GenderEnum.MALE),
+      //   z.literal(GenderEnum.FEMALE),
+      // ]),
+      gender: validationGeneralFields.gender,
+    })
+    .superRefine((data, context) => {
+      validationGeneralFields.matchField({
+        original: "password",
+        copy: "confirmPassword",
+        data,
+        context,
       });
-    }
-    if (!data.userName.includes(" ")) {
-      context.addIssue({
-        code: "custom",
-        path: ["userName"],
-        message: "userName must contain 2 parts",
-      });
-    }
-  });
+    }),
+});

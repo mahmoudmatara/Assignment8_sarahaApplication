@@ -1,11 +1,14 @@
 import { ConflictException } from "../../common/exceptions/error.exceptions.js";
 import {
   createLoginCredentials,
-  decodeToken,
+  createRevokeToken,
+  userBaseRevokeTokenKey,
 } from "../../common/security/token.security.js";
 import { ACCESS_TOKEN_EXPIRES_IN } from "../../config.js";
 import { findByIdAndUpdate } from "./../../common/repository/db.repository.js";
 import { UserModel } from "./../../DB/model/user.model.js";
+import { deleteCache, keysCache } from "./../../common/services/index.js";
+import { logoutEnum } from "../../common/enum/index.js";
 
 export const getProfileService = async (account) => {
   return account;
@@ -34,5 +37,36 @@ export const rotateTokenService = async (payload, issuer) => {
     );
   }
 
-  return createLoginCredentials({ account: payload, issuer });
+  const data = await createLoginCredentials({ account: payload, issuer });
+  await createRevokeToken({ payload });
+  return data;
+};
+
+export const logOutService = async (
+  payload,
+  user,
+  { action = logoutEnum.ONE_DEVICE }
+) => {
+  console.log({ user });
+  switch (action) {
+    case logoutEnum.ALL_DEVICE:
+      user.changeCredentialsTime = new Date();
+      await user.save();
+      // console.log({
+      //   k: await keysCache({
+      //     prefix: userBaseRevokeTokenKey({ userId: payload.sub }),
+      //   }),
+      // });
+      await deleteCache({
+        key: await keysCache({
+          prefix: userBaseRevokeTokenKey({ userId: payload.sub }),
+        }),
+      });
+      break;
+
+    default:
+      await createRevokeToken({ payload });
+      break;
+  }
+  return;
 };

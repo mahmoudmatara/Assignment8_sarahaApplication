@@ -18,5 +18,4 @@ authenticationRouter.post(
   validation(validators.loginValidation),
   loginController
 );
-
 export default authenticationRouter;

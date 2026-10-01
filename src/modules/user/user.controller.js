@@ -1,6 +1,7 @@
 import { successResponse } from "../../common/utils/success.response.js";
 import {
   getProfileService,
+  logOutService,
   rotateTokenService,
   updateProfileService,
 } from "./user.service.js";
@@ -29,6 +30,15 @@ export const rotateTokenController = async (req, res, next) => {
       req.payload,
       `${req.protocol}://${req.get("host")}`
     );
+    return successResponse({ res, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logOutController = async (req, res, next) => {
+  try {
+    const data = await logOutService(req.payload, req.user, req.body);
     return successResponse({ res, data });
   } catch (error) {
     next(error);

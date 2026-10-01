@@ -7,6 +7,7 @@ import {
 } from "../../middleware/authentication.middleware.js";
 import {
   getProfileController,
+  logOutController,
   rotateTokenController,
   updateProfileController,
 } from "./user.controller.js";
@@ -25,5 +26,6 @@ userRouter.post(
   authentication(tokenTypeEnum.ROTATETOKEN),
   rotateTokenController
 );
+userRouter.post("/logout", authentication(), logOutController);
 
 export default userRouter;

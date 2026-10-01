@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema(
     image: String,
     confirmEmail: Date,
     coverImage: [String],
+    changeCredentialsTime: Date,
     gender: {
       type: Number,
       enum: Object.values(GenderEnum),
