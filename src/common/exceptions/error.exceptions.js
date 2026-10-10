@@ -34,6 +34,13 @@ export const ConflictException = (message = "Email Already Exists") => {
   return ApplicationException(message, { cause: { status: 409 } });
 };
 
+//429 many Request
+export const TooManyRequestException = (
+  message = "Too Many Request Exception"
+) => {
+  return ApplicationException(message, { cause: { status: 429 } });
+};
+
 // 422 Unprocessable Entity
 export const ValidationException = (message = "Validation Error") => {
   return ApplicationException(message, { cause: { status: 422 } });

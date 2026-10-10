@@ -1,11 +1,5 @@
 import "dotenv/config";
 import express from "express";
-import { decryption, encryption } from "./common/security/index.js";
-import {
-  existCache,
-  getCache,
-  setCache,
-} from "./common/services/cache.service.js";
 import { PORT } from "./config.js";
 import { connectDB } from "./DB/connection.js";
 import errorMiddleware from "./middleware/error.middleware.js";
@@ -27,6 +21,3 @@ app.all("{/*dummy}", (req, res) => {
 });
 
 app.use(errorMiddleware);
-
-const encryptedValue = await encryption("sara");
-const plain = await decryption(encryptedValue);

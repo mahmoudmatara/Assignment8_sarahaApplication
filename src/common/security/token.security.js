@@ -1,12 +1,6 @@
 import jwt from "jsonwebtoken";
-import { UserModel } from "../../DB/model/user.model.js";
-import {
-  BadRequestException,
-  NotFoundException,
-} from "../exceptions/error.exceptions.js";
-import { decryption } from "./encryption.security.js";
+import { BadRequestException } from "../exceptions/error.exceptions.js";
 import { tokenTypeEnum } from "./../enum/security.token.js";
-import { findById } from "../repository/db.repository.js";
 import { RoleEnum } from "../enum/index.js";
 import {
   ACCESS_ADMIN_TOKEN_SIGNATURE,
@@ -19,10 +13,12 @@ import {
 import { randomUUID } from "node:crypto";
 import { existCache, setCache } from "../services/cache.service.js";
 import { UnauthorizedException } from "./../exceptions/error.exceptions.js";
+import { getProfile } from "../services/index.js";
 
 export const userBaseRevokeTokenKey = ({ userId }) => {
   return `User::${userId.toString()}::Revoke_token`;
 };
+
 export const revokeTokenKey = ({ userId, jti }) => {
   return `${userBaseRevokeTokenKey({ userId })}::${jti}`;
 };
@@ -94,29 +90,19 @@ export const decodeToken = async ({
     throw UnauthorizedException("expired login credentials");
   }
 
-  const profileData = await findById({
-    model: UserModel,
-    id: payload.sub,
-    select: "-password",
-  });
-
-  if (!profileData) throw NotFoundException();
-
-  const userObject = profileData.toObject();
-
-  if (userObject.phone) {
-    userObject.phone = await decryption(userObject.phone);
-  }
+  const profileData = await getProfile({ userId: payload.sub });
 
   //profileData.changeCredentialsTime  <== ده الوقت الي اليوزر عمل فيه لوج اوت
   if (
-    (profileData.changeCredentialsTime?.getTime() ?? 0) >
+    (profileData.changeCredentialsTime
+      ? new Date(profileData.changeCredentialsTime).getTime()
+      : 0) >
     payload.iat * 1000
   ) {
     throw UnauthorizedException("expired login credentials");
   }
 
-  return { profileData, userObject, payload };
+  return { profileData, payload };
 };
 
 export const createLoginCredentials = async ({

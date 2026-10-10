@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { GenderEnum, RoleEnum } from "../../common/enum/index.js";
+import { calculateAge } from "./../../common/utils/age.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -28,11 +29,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    age: {
-      type: Number,
-      min: 18,
-      max: 60,
-    },
+    // age: {
+    //   type: Number,
+    //   min: 18,
+    //   max: 60,
+    // },
     DOB: Date,
     image: String,
     confirmEmail: Date,
@@ -48,9 +49,14 @@ const userSchema = new mongoose.Schema(
       enum: Object.values(RoleEnum),
       default: RoleEnum.USER,
     },
+    twoStepVerification: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
+    id: false,
     strict: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
@@ -66,5 +72,7 @@ userSchema
   .get(function () {
     return `${this.firstName} ${this.lastName}`;
   });
-
+userSchema.virtual("age").get(function () {
+  return calculateAge(this.DOB);
+});
 export const UserModel = mongoose.model("user", userSchema);

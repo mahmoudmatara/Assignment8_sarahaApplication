@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  matchField,
-  validationGeneralFields,
-} from "./../../common/validation.js";
+import { validationGeneralFields } from "./../../common/validation.js";
 
 export const loginSchema = z.strictObject({
   email: validationGeneralFields.email,
@@ -22,7 +19,8 @@ export const signupValidation = z.object({
       userName: validationGeneralFields.userName,
       phone: validationGeneralFields.phone,
       confirmPassword: validationGeneralFields.password,
-      age: validationGeneralFields.age,
+      DOB: validationGeneralFields.DOB,
+      // age: validationGeneralFields.age,
       // gender: z.union([
       //   z.literal(GenderEnum.MALE),
       //   z.literal(GenderEnum.FEMALE),
@@ -37,4 +35,39 @@ export const signupValidation = z.object({
         context,
       });
     }),
+});
+
+export const confirmEmailValidation = z.object({
+  body: z.object({
+    email: validationGeneralFields.email,
+    otp: validationGeneralFields.otp,
+  }),
+  query: z.strictObject({
+    lang: z.enum(["ar", "en"]).optional(),
+  }),
+});
+
+export const resendConfirmEmailValidation = z.object({
+  body: z.object({
+    email: validationGeneralFields.email,
+  }),
+  query: z.strictObject({
+    lang: z.enum(["ar", "en"]).optional(),
+  }),
+});
+
+export const resetPasswordValidation = z.object({
+  body: confirmEmailValidation.shape.body.safeExtend({
+    password: validationGeneralFields.password,
+  }),
+  query: confirmEmailValidation.shape.query,
+});
+
+export const confirmTwoStepsValidation = z.object({
+  body: z.strictObject({
+    otp: validationGeneralFields.otp,
+  }),
+  query: z.strictObject({
+    lang: z.enum(["ar", "en"]).optional(),
+  }),
 });

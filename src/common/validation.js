@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { GenderEnum } from "./enum/user.enum.js";
+import { calculateAge } from "./utils/age.js";
 
 export const matchField = ({ original, copy, data, context }) => {
   if (data[original] !== data[copy]) {
@@ -12,7 +13,7 @@ export const matchField = ({ original, copy, data, context }) => {
 };
 
 export const validationGeneralFields = {
-  email: z.email({
+  email: z.string({
     error: "Invalid email format",
   }),
 
@@ -34,10 +35,23 @@ export const validationGeneralFields = {
     .string()
     .regex(/^\+201(0|1|2|5)\d{8}$/, "Invalid Egyptian phone number"),
 
-  age: z.number().min(18).max(60),
+  DOB: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "DOB must be in YYYY-MM-DD format")
+    .refine((value) => {
+      const date = new Date(value);
+      return !isNaN(date) && date.toISOString().slice(0, 10) === value;
+    }, "Invalid date of birth")
+    .transform((value) => new Date(value))
+    .refine((date) => {
+      const age = calculateAge(date);
+      return age >= 18 && age <= 60;
+    }, "Age must be between 18 and 60"),
 
   gender: z.enum(GenderEnum),
+  image: z.string(),
+  coverImage: z.array(z.string()),
   otp: z.string().regex(/^\d{6}$/, "OTP must be exactly 6 digits"),
-
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid id"),
   matchField,
 };
