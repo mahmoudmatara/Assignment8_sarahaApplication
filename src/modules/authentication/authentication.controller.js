@@ -11,6 +11,8 @@ import {
   verifyForgotPasswordCodeService,
 } from "./authentication.service.js";
 import { successResponse } from "./../../common/utils/success.response.js";
+import { deleteCache } from "../../common/services/cache.service.js";
+import { rateLimit } from "express-rate-limit";
 
 export const signUpController = async (req, res, next) => {
   try {
@@ -100,6 +102,7 @@ export const loginController = async (req, res, next) => {
       req.validate.body,
       `${req.protocol}//${req.host}`
     );
+    await deleteCache({ key: req.rateLimit.key });
     return successResponse({
       res,
       message: data.requiresTwoStepVerification

@@ -1,3 +1,6 @@
+
+
+
 export const create = async ({ model, data } = {}) => {
   return await model.create(data);
 };
@@ -19,6 +22,38 @@ export const find = async ({
   options = {},
 } = {}) => {
   return await model.find(filter, select, options).populate(populate);
+};
+
+export const countDocument = async ({ model, filter = {} } = {}) => {
+  return await model.countDocuments(filter);
+};
+
+export const paginate = async ({
+  model,
+  filter = {},
+  options = {},
+  select = "",
+  page = 1,
+  limit = 10,
+} = {}) => {
+  const skip = (page - 1) * limit;
+  const total = await countDocument({ model, filter });
+  const totalPages = Math.ceil(total / limit);
+
+  const docs = await find({
+    model,
+    filter,
+    select,
+    options: { ...options, skip, limit },
+  });
+
+  return {
+    docs,
+    total,
+    page,
+    limit,
+    totalPages,
+  };
 };
 
 export const findOne = async ({
@@ -52,4 +87,8 @@ export const findByIdAndUpdate = async ({
 
 export const findByIdAndDelete = async ({ model, id, options = {} } = {}) => {
   return await model.findByIdAndDelete(id, options);
+};
+
+export const deleteOne = async ({ model, filter } = {}) => {
+  return await model.deleteOne(filter);
 };

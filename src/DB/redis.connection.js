@@ -5,11 +5,18 @@ export const client = createClient({
   url: REDIS_URI,
 });
 
+client.on("error", (error) => {
+  console.error("Redis Client Error:", error);
+});
+
 export async function connectRedis() {
   try {
-    await client.connect();
-    console.log(`REDIS CONNECTION STABLISH SUCCESSFULLY`);
+    if (!client.isOpen) {
+      await client.connect();
+    }
+    console.log("REDIS CONNECTION ESTABLISHED SUCCESSFULLY");
   } catch (error) {
-    console.log(`FAIL TO STABLISH REDIS CONNECTION`);
+    console.error("FAILED TO CONNECT TO REDIS:", error);
+    throw error;
   }
 }

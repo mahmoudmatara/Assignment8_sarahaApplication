@@ -1,6 +1,5 @@
 import { deleteCache, getCache, setCache } from "./cache.service.js";
-import { findById } from "../repository/db.repository.js";
-import { UserModel } from "./../../DB/model/index.js";
+import { findById } from "../repository/user.repository.js";
 import { NotFoundException } from "./../exceptions/index.js";
 
 const PROFILE_TTL = 60 * 60;
@@ -15,7 +14,6 @@ export const getProfile = async ({ userId }) => {
   console.log({ key, cachedProfile });
   if (cachedProfile) return cachedProfile;
   const user = await findById({
-    model: UserModel,
     id: userId,
     select: "-password",
   });

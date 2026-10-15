@@ -138,7 +138,7 @@ export const createLoginCredentials = async ({
     },
     secret: refreshSignatures,
   });
-  console.log({ accessSignatures, refreshSignatures });
+  // console.log({ accessSignatures, refreshSignatures });
   return { access_token, refresh_token };
 };
 

@@ -26,7 +26,7 @@ import {
   processMulterUpload,
 } from "../../middleware/file-upload.middleware.js";
 
-const userRouter = Router();
+const userRouter = Router({ caseSensitive: true, strict: true });
 
 userRouter.get("/profile", authentication(), getProfileController);
 
@@ -65,8 +65,9 @@ userRouter.patch(
   authentication(),
   localFileUpload({
     maxFileSize: 3,
+    maxFiles: 3,
     validation: fileValidation.image,
-  }).array("attachment", 3),
+  }).single("attachment"),
   processMulterUpload({
     customPath: "users/profile",
     validation: fileValidation.image,

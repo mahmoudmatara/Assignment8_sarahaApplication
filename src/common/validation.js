@@ -53,5 +53,12 @@ export const validationGeneralFields = {
   coverImage: z.array(z.string()),
   otp: z.string().regex(/^\d{6}$/, "OTP must be exactly 6 digits"),
   id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid id"),
+  file: z.object({
+    fieldname: z.literal("attachment"),
+    originalname: z.string(),
+    mimetype: z.string(),
+    size: z.number(),
+    buffer: z.instanceof(Buffer),
+  }),
   matchField,
 };

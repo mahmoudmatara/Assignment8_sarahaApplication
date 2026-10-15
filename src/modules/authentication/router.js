@@ -14,8 +14,9 @@ import {
 } from "./authentication.controller.js";
 import * as validators from "./authentication.validation.js";
 import { authentication } from "../../middleware/authentication.middleware.js";
+import { generateLimiter } from "../../common/utils/limiter.js";
 
-const authenticationRouter = Router();
+const authenticationRouter = Router({ caseSensitive: true, strict: true });
 
 authenticationRouter.post(
   "/signup",
@@ -54,6 +55,7 @@ authenticationRouter.patch(
 
 authenticationRouter.post(
   "/login",
+  generateLimiter({ limit: 5, ttl: 5, skipSuccessfulRequests: true }),
   validation(validators.loginValidation),
   loginController
 );

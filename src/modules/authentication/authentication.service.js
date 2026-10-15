@@ -3,7 +3,11 @@ import {
   NotFoundException,
   TooManyRequestException,
 } from "../../common/exceptions/index.js";
-import { create, findById, findOne } from "./../../common/repository/index.js";
+import {
+  create,
+  findById,
+  findOne,
+} from "./../../common/repository/user.repository.js";
 import { UserModel } from "./../../DB/model/user.model.js";
 import {
   compare,
@@ -92,7 +96,6 @@ export const signUpService = async (body) => {
   const { userName, email, password, phone, DOB, gender } = body;
 
   const account = await findOne({
-    model: UserModel,
     filter: { email },
     select: "email",
   });
@@ -122,7 +125,6 @@ export const confirmEmailService = async (body) => {
   const { email, otp } = body;
 
   const account = await findOne({
-    model: UserModel,
     filter: { email, confirmEmail: { $exists: false } },
   });
   if (!account) throw NotFoundException("Invalid account");
@@ -148,7 +150,6 @@ export const resendConfirmEmailService = async (body) => {
   const { email } = body;
 
   const account = await findOne({
-    model: UserModel,
     filter: { email, confirmEmail: { $exists: false } },
   });
   if (!account) throw NotFoundException("Invalid account");
@@ -160,7 +161,6 @@ export const forgotPasswordCodeService = async (body) => {
   const { email } = body;
 
   const account = await findOne({
-    model: UserModel,
     filter: { email, confirmEmail: { $exists: true } },
   });
   if (!account) throw NotFoundException("Invalid account");
@@ -172,7 +172,6 @@ export const verifyForgotPasswordCodeService = async (body) => {
   const { email, otp } = body;
 
   const account = await findOne({
-    model: UserModel,
     filter: { email, confirmEmail: { $exists: true } },
   });
   if (!account) throw NotFoundException("Invalid account");
@@ -221,7 +220,6 @@ export const loginService = async (body, issuer) => {
   const loginTrailsKey = userLoginTrailsKey({ email });
 
   const account = await findOne({
-    model: UserModel,
     filter: { email },
   });
 
@@ -282,7 +280,6 @@ export const loginConfirmationService = async (body, issuer) => {
   const maxFailedTrials = 5;
 
   const account = await findOne({
-    model: UserModel,
     filter: { email, twoStepVerification: true },
   });
   if (!account) throw NotFoundException("Invalid account");

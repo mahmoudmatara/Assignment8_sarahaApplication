@@ -1,3 +1,4 @@
+import { BadRequestException } from "../../common/exceptions/error.exceptions.js";
 import { successResponse } from "../../common/utils/success.response.js";
 import { UserModel } from "../../DB/model/user.model.js";
 import {
@@ -68,26 +69,38 @@ export const deletedUserController = async (req, res, next) => {
 
 export const profileImageController = async (req, res, next) => {
   try {
-    // التأكد من وجود ملفات مُعالجة
-    if (!req.files || req.files.length === 0) {
-      throw new BadRequestException("Please upload at least one image");
-    }
+    if (!req.file)
+      throw BadRequestException("Please upload at least one image");
 
     const userId = req.user._id || req.user.id;
     const user = await UserModel.findById(userId);
 
     if (!user) {
-      throw new BadRequestException("User not found");
+      throw BadRequestException("User not found");
     }
 
-    // إذا كنت تريد أخذ أول صورة من الثلاثة وتعيينها كصورة بروفايل:
-    user.image = req.files[0].finalPath;
+    user.image = req.file.finalPath;
     await user.save();
-
+    console.log(req.body, req.file?.finalPath);
     return successResponse({
       res,
       message: "Profile picture uploaded successfully.",
-      data: { user },
+      data: { image: user.image },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const testUploadController = async (req, res, next) => {
+  try {
+    return successResponse({
+      res,
+      message: "Received",
+      data: {
+        content: req.body?.content ?? null,
+        images: (req.files || []).map((f) => f.finalPath),
+      },
     });
   } catch (error) {
     next(error);

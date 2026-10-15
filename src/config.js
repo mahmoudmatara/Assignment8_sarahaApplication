@@ -14,6 +14,7 @@ export const APP_NAME = process.env.APP_NAME;
 export const Instagram = process.env.Instagram;
 export const WhatsApp = process.env.WhatsApp;
 export const Facebook = process.env.Facebook;
+export const ORIGIN = process.env.ORIGIN;
 
 export const ACCESS_USER_TOKEN_SIGNATURE =
   process.env.ACCESS_USER_TOKEN_SIGNATURE;

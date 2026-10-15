@@ -12,7 +12,7 @@ import {
   findById,
   findByIdAndDelete,
   findByIdAndUpdate,
-} from "./../../common/repository/db.repository.js";
+} from "./../../common/repository/user.repository.js";
 import { UserModel } from "./../../DB/model/user.model.js";
 import {
   deleteCache,
