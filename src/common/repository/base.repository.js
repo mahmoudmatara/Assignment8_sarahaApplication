@@ -1,6 +1,3 @@
-
-
-
 export const create = async ({ model, data } = {}) => {
   return await model.create(data);
 };
@@ -33,6 +30,7 @@ export const paginate = async ({
   filter = {},
   options = {},
   select = "",
+  populate = [],
   page = 1,
   limit = 10,
 } = {}) => {
@@ -44,6 +42,7 @@ export const paginate = async ({
     model,
     filter,
     select,
+    populate,
     options: { ...options, skip, limit },
   });
 
