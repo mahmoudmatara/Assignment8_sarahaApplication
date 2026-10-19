@@ -1,5 +1,5 @@
 import z from "zod";
-import { RequestStatusEnm } from "../../common/enum/Request.status.enm.js";
+import { RequestStatusEnm } from "../../common/enum/request.status.enm.js";
 import { validationGeneralFields } from "../../common/validation.js";
 
 export const createRequestValidation = z.object({
