@@ -10,7 +10,6 @@ export const createMessageValidation = z
     files: z.array(validationGeneralFields.file).max(3).optional(),
   })
   .superRefine((data, context) => {
-    console.log({ data });
     if (!data.body.content && !data.files?.length) {
       context.addIssue({
         code: "custom",

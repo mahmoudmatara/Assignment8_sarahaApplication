@@ -24,6 +24,7 @@ import { logoutEnum } from "../../common/enum/index.js";
 import { compare, decryption, hash } from "../../common/security/index.js";
 import { encryption } from "./../../common/security/index.js";
 import { NotFoundException } from "./../../common/exceptions/index.js";
+import { find } from "../../common/repository/base.repository.js";
 
 export const getProfileService = async (account) => {
   const profile = { ...account };
@@ -43,7 +44,6 @@ export const updateProfileService = async (account, updateData) => {
     data.lastName = lastName;
   }
   if (data.phone) data.phone = await encryption(data.phone);
-  console.log("account id:", account._id);
   if (password) {
     const user = await findById({
       model: UserModel,
@@ -95,7 +95,6 @@ export const logOutService = async (
   user,
   { action = logoutEnum.ONE_DEVICE }
 ) => {
-  // console.log({ user });
   switch (action) {
     case logoutEnum.ALL_DEVICE:
       await findByIdAndUpdate({
@@ -162,4 +161,46 @@ export const deletedUserService = async (admin, { userId }) => {
   if (!user) throw NotFoundException("User not Found");
   await cleanDeletedUser({ userId });
   return;
+};
+
+
+const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export const searchUsersService = async ({ word }, user) => {
+  const cleanWord = word.trim();
+
+  const searchConditions = [];
+
+  // 1. شرط الإيميل (لو كتب الإيميل كاملاً بالظبط)
+  searchConditions.push({
+    email: new RegExp("^" + escapeRegex(cleanWord) + "$", "i"),
+  });
+
+  // 2. شرط الاسم (الـ Validation مضمونة إن الـ word حرفين على الأقل)
+  const words = cleanWord.split(/\s+/).filter(Boolean).slice(0, 3);
+
+  searchConditions.push({
+    $and: words.map((w) => {
+      const start = new RegExp("^" + escapeRegex(w), "i");
+      return { $or: [{ firstName: start }, { lastName: start }] };
+    }),
+  });
+
+  const users = await find({
+    filter: {
+      _id: { $ne: user._id },
+      confirmEmail: { $exists: true },
+      $or: searchConditions, // إما إيميل مطابق تماماً أو مطابقة الكلمات في الاسم
+    },
+    select: "firstName lastName image email",
+    options: { sort: { firstName: 1 }, limit: 10 },
+  });
+
+  return users.map((u) => ({
+    _id: u._id,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    image: u.image,
+    email: u.email,
+  }));
 };

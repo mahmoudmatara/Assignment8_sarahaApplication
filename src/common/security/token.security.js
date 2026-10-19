@@ -74,7 +74,6 @@ export const decodeToken = async ({
 } = {}) => {
   const decoded = jwt.decode(authorization);
   if (!decoded?.aud?.length) throw BadRequestException("missing token payload");
-  // console.log({ decoded });
   const payload = await verifyToken({
     token: authorization,
     secret: await getSignature({ tokenType, role: decoded.aud[0] }),
@@ -138,7 +137,6 @@ export const createLoginCredentials = async ({
     },
     secret: refreshSignatures,
   });
-  // console.log({ accessSignatures, refreshSignatures });
   return { access_token, refresh_token };
 };
 

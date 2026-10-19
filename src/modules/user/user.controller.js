@@ -7,6 +7,7 @@ import {
   getProfileService,
   logOutService,
   rotateTokenService,
+  searchUsersService,
   updateProfileService,
 } from "./user.service.js";
 
@@ -81,7 +82,6 @@ export const profileImageController = async (req, res, next) => {
 
     user.image = req.file.finalPath;
     await user.save();
-    console.log(req.body, req.file?.finalPath);
     return successResponse({
       res,
       message: "Profile picture uploaded successfully.",
@@ -102,6 +102,15 @@ export const testUploadController = async (req, res, next) => {
         images: (req.files || []).map((f) => f.finalPath),
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const searchUsersController = async (req, res, next) => {
+  try {
+    const data = await searchUsersService(req.validate.query, req.user);
+    return successResponse({ res, data });
   } catch (error) {
     next(error);
   }

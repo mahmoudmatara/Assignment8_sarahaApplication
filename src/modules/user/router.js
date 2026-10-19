@@ -12,11 +12,13 @@ import {
   logOutController,
   profileImageController,
   rotateTokenController,
+  searchUsersController,
   updateProfileController,
 } from "./user.controller.js";
 import {
   deletedAccountValidation,
   deletedUserValidation,
+  searchUserValidation,
   updateProfileValidation,
 } from "./user.validation.js";
 import { validation } from "./../../middleware/validation.middleware.js";
@@ -73,6 +75,13 @@ userRouter.patch(
     validation: fileValidation.image,
   }),
   profileImageController
+);
+
+userRouter.get(
+  "/search",
+  authentication(),
+  validation(searchUserValidation),
+  searchUsersController
 );
 
 export default userRouter;

@@ -12,7 +12,6 @@ import {
 } from "./authentication.service.js";
 import { successResponse } from "./../../common/utils/success.response.js";
 import { deleteCache } from "../../common/services/cache.service.js";
-import { rateLimit } from "express-rate-limit";
 
 export const signUpController = async (req, res, next) => {
   try {

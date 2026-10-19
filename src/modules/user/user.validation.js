@@ -54,3 +54,9 @@ export const deletedAccountValidation = z.object({
     password: validationGeneralFields.password,
   }),
 });
+
+export const searchUserValidation = z.object({
+  query: z.strictObject({
+    word: z.string().trim().min(2).max(50),
+  }),
+});

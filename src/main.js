@@ -8,22 +8,33 @@ import cors from "cors";
 import helmet from "helmet";
 import { UnauthorizedException } from "./common/exceptions/error.exceptions.js";
 import { generateLimiter } from "./common/utils/limiter.js";
-
+import morgan from "morgan";
 const app = express();
 
 var corsOptions = {
   origin: function (origin, callback) {
-    if (!ORIGIN.includes(origin)) {
-      callback(UnauthorizedException("Unauthorized Origin!"), ORIGIN);
+    // السماح للطلبات التي ليس لها origin (مثل Postman أو سيرفر داخلي)
+    if (!origin) return callback(null, true);
+
+    if (ORIGIN.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
     }
-    callback(null, ORIGIN);
   },
+  credentials: true, // مهم جداً لو بتتعامل مع Cookies / Tokens
 };
 
 app.set("trust proxy", true);
 const limiter = generateLimiter({});
 
-app.use(helmet(), cors(), limiter, express.json());
+app.use(
+  helmet(),
+  cors(corsOptions),
+  morgan("combined"),
+  limiter,
+  express.json()
+);
 app.use("/uploads", express.static("uploads"));
 
 app.use(appRouter);

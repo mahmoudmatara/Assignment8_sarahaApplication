@@ -11,13 +11,11 @@ export const profileKey = ({ userId }) => {
 export const getProfile = async ({ userId }) => {
   const key = profileKey({ userId });
   const cachedProfile = await getCache({ key });
-  console.log({ key, cachedProfile });
   if (cachedProfile) return cachedProfile;
   const user = await findById({
     id: userId,
     select: "-password",
   });
-  console.log({ user });
   if (!user) throw NotFoundException("User not found");
 
   const profile = user.toObject();
